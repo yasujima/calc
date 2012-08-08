@@ -1,91 +1,84 @@
 #!/usr/local/bin/node
-//	expr : term { (+|-) term }
-//	term : fact { (*|/) fact }
-//	fact : number | '(' expr ')'
-//<expression>   ::= <term> ('+' <term>)* | <term> ('-' <term>)*
-//<term>         ::= <factor> ('*' <factor>)* | <factor> ('/' <factor>)*
-//<factor>       ::= '(' <expression> ')' | '+' <expression> | '-' <expression> | <number>
+
+// Expr ::= Term { ("+" | "-") Term }
+// Term ::= Fact { ("*" | "/") Fact }
+// Fact ::= "(" Expr ")" | "+" Fact | "-" Fact | digit
 
 var str = process.argv[2];
 
-function parse(str) {
+var Calc = {};
+Calc.opes = {
+  validate : function (result, ope) {
+    if (isNaN(result) || Math.abs(result) === Infinity) throw ope + " ope failed";
+  },
+  "+" : function (lhs, rhs) {
+    var result = lhs + rhs;
+    this.validate(result, "add");
+    return result;
+  },
+  "-" : function (lhs, rhs) {
+    var result = lhs - rhs;
+    this.validate(result, "sub");
+    return result;
+  },
+  "*" : function (lhs, rhs) {
+    var result = lhs * rhs;
+    this.validate(result, "mul");
+    return result;
+  },
+  "/" : function (lhs, rhs) {
+    var result = lhs / rhs;
+    this.validate(result, "div");
+    return result;
+  }
+};
+
+Calc.exec = function (str) {
+  var pos = 0;
   var tokens = (function(str) {
                   var regex = /\d+\.\d+(?:e[+\-]?\d+)?|\d+(?:e[+\-]?\d+)?|[+\-*/()]/img;
                   var tokens = str.match(regex);
-                  return tokens;})(str);
-  console.log(JSON.stringify(tokens));
-  var pos = 0;
-  var opes = {
-    "+" : function (lhs, rhs) {
-      var result = lhs + rhs;
-      if (isNaN(result) || Math.abs(result) === Infinity) throw "add operation failed, overflow";
-      return result;
-    },
-    "-" : function (lhs, rhs) {
-      var result = lhs - rhs;
-      if (isNaN(result) || Math.abs(result) === Infinity) throw "minus operation failed";
-      return result;
-    },
-    "*" : function (lhs, rhs) {
-      var result = lhs * rhs;
-      if (isNaN(result) || Math.abs(result) === Infinity) throw "multiply operation failed";
-      return result;
-    },
-    "/" : function (lhs, rhs) {
-      var result = lhs / rhs;
-      if (isNaN(result) || Math.abs(result) === Infinity) throw "divide operation failed";
-      return result;
-    }
-  };
-  function POP() {
+                  return tokens;
+                })(str);
+  console.dir(tokens);
+  return expr();
+
+  function get() {
     return tokens[pos++];
   }
-  function PUSH(token) {
-    tokens.push(token);
-  }
-  function PEEK() {
+  function peek() {
     return tokens[pos];
   }
-  function EXPR() {
-    var c = TERM();
-    while (PEEK() == "+"||PEEK()=="-") {
-      c = opes[POP()](c, TERM());
+  function expr() {
+    var c = term();
+    while (peek() == "+"||peek()=="-") {
+      c = Calc.opes[get()](c, term());
     }
     return c;
   }
-  function TERM() {
-    var c = FACT();
-    while(PEEK() == "*" || PEEK() == "/") {
-      c = opes[POP()](c, FACT());
+  function term() {
+    var c = fact();
+    while(peek() == "*" || peek() == "/") {
+      c = Calc.opes[get()](c, fact());
     }
     return c;
   }
-  function FACT() {
-    var c = POP();
+  function fact() {
+    var c = get();
     if (c.match(/[0-9]+/)) {
       return Number(c);
     }
+    if (c.match(/[\-+]/)) {
+      return Number(c=="-"?-fact():fact());
+    }
     if (c == "(") {
-      c = EXPR();
-      if (POP() != ")") throw "invalid error";
+      c = expr();
+      if (get() != ")") throw "invalid error";
       return c;
     }
-    if (c.match(/[+\-]/)) {
-      console.log("....c=" + c);
-      var ret;
-      if (c=="-") ret = (-EXPR());
-      else ret =  EXPR();
-      console.log("#### " + ret);
-      return ret;
-    }
     return "invalid error";
-  }
-  try {
-    return EXPR();
-  } catch (e) {
-    return e;
   }
 
 }
 
-console.log(parse(str));
+console.log(Calc.exec(str));
