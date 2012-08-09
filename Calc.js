@@ -14,31 +14,33 @@
 */
 
 var Calc = {};
+
 Calc.opes = {
   validate : function (result, ope) {
-    if (isNaN(result) || Math.abs(result) === Infinity) throw ope + " ope failed";
+    if (isNaN(result) || Math.abs(result) === Infinity) throw "\""+ ope + "\" operation failed";
   },
   "+" : function (lhs, rhs) {
     var result = lhs + rhs;
-    this.validate(result, "add");
+    this.validate(result, "+");
     return result;
   },
   "-" : function (lhs, rhs) {
     var result = lhs - rhs;
-    this.validate(result, "sub");
+    this.validate(result, "-");
     return result;
   },
   "*" : function (lhs, rhs) {
     var result = lhs * rhs;
-    this.validate(result, "mul");
+    this.validate(result, "*");
     return result;
   },
   "/" : function (lhs, rhs) {
     var result = lhs / rhs;
-    this.validate(result, "div");
+    this.validate(result, "/");
     return result;
   }
 };
+
 Calc.Tokens = function(str) {
   this.tokens = (function(str){
                    var regex = /\d+\.\d+(?:e[+\-]?\d+)?|\d+(?:e[+\-]?\d+)?|[+\-*/()]/img;
@@ -49,6 +51,7 @@ Calc.Tokens = function(str) {
   this.get = function() {return this.tokens[this.pos++];};
   this.peek = function() {return this.tokens[this.pos];};
 };
+
 Calc.exec = function(str) {
   var tokens = new Calc.Tokens(str);
   console.dir(tokens.tokens);
@@ -86,7 +89,7 @@ Calc.exec = function(str) {
 };
 
 Calc.usage = function() {
-  return "Usage: a calculator. usable + - * / and () operation.";
+  return "Calculator: use +, -, *, /, and () operator.";
 }
 
 // node.js drive.

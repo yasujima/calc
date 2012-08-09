@@ -4,22 +4,41 @@
        <title>calc</title>
        <script type="text/javascript" src="Calc.js"></script>
        <script>
-         function calc() {
-           var str = document.f1.input.value;
-           try {
+          function init() {
+              document.f.input.value="";
+              document.getElementById("header").innerHTML = Calc.usage();
+              textfocus();
+          }
+
+          function textfocus() {
+            document.f.input.focus();
+          }
+
+          function calc() {
+            var str = document.f.input.value;
+            try {
               var result = Calc.exec(str);
-              document.f1.output.value=result;
-           } catch (e) {
-                  alert(e);
-           }
-         }
+              document.f.input.value = result;
+              var element = document.createElement('div'); 
+              element.innerHTML = str + "=" + result;
+              document
+                .getElementById("result")
+                .insertBefore(element,
+                              document.getElementById("result").firstChild);
+              textfocus();
+            } catch (e) {
+              alert(e);
+            }
+          }
+
        </script>
    </head>
-   <body>
-     <form name="f1"  onsubmit="calc()">
-       <input size="30" type="text" name="input" />
+   <body onload="init()">
+     <div id="header"></div>
+     <form name="f" onsubmit="return false;">
+       <input size="30" type="text" name="input"/>
        <input type="button" value="exec" onclick="calc()" />
-       <input size="30" type="text" name="output" />
      </form>
+     <div id="result"></div>
    </body>
 </html> 
