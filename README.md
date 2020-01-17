@@ -1,3 +1,7 @@
+js で実装した、四則演算。parser/evalの練習。
+
+
+
 # Javascript Calculator Manual
 
 javascriptで動く4則演算計算機です。  
